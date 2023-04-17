@@ -2,22 +2,25 @@ import { Button, Container, Form, Alert } from "react-bootstrap";
 import { useNavigate } from "react-router";
 import { useUserAuth } from "../../context/userAuthContext";
 import { useState, useRef } from "react";
+
 const Home = () => {
   const { logOut, user } = useUserAuth();
   const { email } = user;
-  const [carModel, setCarModel] = useState("");
-  const [carMake, setCarMake] = useState("");
-  const [carYear, setCarYear] = useState("");
-  const [carKms, setCarKms] = useState("");
-  const [carPrice, setCarPrice] = useState("");
+  const [model, setModel] = useState("");
+  const [make, setMake] = useState("");
+  const [year, setYear] = useState("");
+  const [mileage, setMileage] = useState("");
+  const [condition, setCondition] = useState("");
+  const [price, setPrice] = useState("");
   const [error, setError] = useState("");
 
   const carDetails = {
-    carModel: carModel,
-    carMake: carMake,
-    carYear: carYear,
-    carKms: carKms,
-    carPrice: carPrice,
+    model: model,
+    make: make,
+    year: year,
+    mileage: mileage,
+    price: price,
+    condition: condition
   };
 
   if (email) {
@@ -53,6 +56,28 @@ const Home = () => {
     }
   };
 
+  const predict = async () => {
+    try {
+      const options = 
+      {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(carDetails)
+      }
+
+      fetch("http://localhost:5069/model", options)
+      .then(response => response.json())
+      .then(data => {
+        console.log("Prediction is " + data.prediction)
+        setPrice(data.prediction)
+      })
+      .catch(error => console.error(error));
+
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
   return (
     <>
       <Container>
@@ -73,7 +98,7 @@ const Home = () => {
               <Form.Control
                 type="text"
                 placeholder="Car Model"
-                onChange={(e) => setCarModel(e.target.value)}
+                onChange={(e) => setModel(e.target.value)}
               />
             </Form.Group>
 
@@ -81,23 +106,33 @@ const Home = () => {
               <Form.Control
                 type="text"
                 placeholder="Car Make"
-                onChange={(e) => setCarMake(e.target.value)}
+                onChange={(e) => setMake(e.target.value)}
               />
             </Form.Group>
 
             <Form.Group className="mb-3" controlId="formBasicPassword">
               <Form.Control
-                type="text"
+                type="number"
+                step="1"
                 placeholder="Car Year"
-                onChange={(e) => setCarYear(e.target.value)}
+                onChange={(e) => setYear(e.target.value)}
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3" controlId="formBasicPassword">
+              <Form.Control
+                type="number"
+                step="0.01"
+                placeholder="Car Mileage"
+                onChange={(e) => setMileage(e.target.value)}
               />
             </Form.Group>
 
             <Form.Group className="mb-3" controlId="formBasicPassword">
               <Form.Control
                 type="text"
-                placeholder="Car Kms"
-                onChange={(e) => setCarKms(e.target.value)}
+                placeholder="Car Condition"
+                onChange={(e) => setCondition(e.target.value)}
               />
             </Form.Group>
 
@@ -105,11 +140,19 @@ const Home = () => {
               <Form.Control
                 type="text"
                 placeholder="Car Price"
-                onChange={(e) => setCarPrice(e.target.value)}
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
               />
             </Form.Group>
           </Form>
         </div>
+
+        <div className="d-grid gap-2">
+          <Button variant="primary" onClick={predict}>
+            Predict
+          </Button>
+        </div>
+
         <div className="p-4 box mt-3 text-center">
           <h2 className="mb-3">Sell Vehicle Page</h2>
         </div>

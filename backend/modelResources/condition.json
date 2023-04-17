@@ -1,0 +1,8 @@
+{
+    "salvage": 0,
+    "fair": 1,
+    "good": 2,
+    "excellent": 3,
+    "like new": 3,
+    "new": 4
+ }
