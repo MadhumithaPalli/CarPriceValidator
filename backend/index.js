@@ -39,7 +39,9 @@ app.post('/model', async (req, res) => {
     const model = await tf.loadLayersModel('http://localhost:5069/model/model.json');
     const carInfo = req.body
   
-    console.log(carInfo)
+    carInfo.make = carInfo.make.toLowerCase();
+    carInfo.model = carInfo.model.toLowerCase();
+    
     let makeArray = Array(manufacturers.length).fill(0);
     makeArray[manufacturers.indexOf(carInfo.make)] = 1; //Set which manufacturer it is.
   
