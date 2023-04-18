@@ -22,6 +22,21 @@ const Home = () => {
     price: price,
     condition: condition
   };
+  const carMakeOptions = [
+    'Acura', 'Aston Martin', 'Audi', 'Bentley', 'BMW', 'Buick', 'Cadillac', 'Chevrolet',
+    'Chrysler', 'Dodge', 'Ferrari', 'FIAT', 'Fisker', 'Ford', 'GMC', 'Honda', 'Hyundai',
+    'INFINITI', 'Jaguar', 'Jeep', 'Kia', 'Lamborghini', 'Land Rover', 'Lexus', 'Lincoln',
+    'Maserati', 'Maybach', 'Mazda', 'McLaren', 'Mercedes-Benz', 'MINI', 'Mitsubishi',
+    'Nissan', 'Porsche', 'Ram', 'Rolls-Royce', 'Saab', 'Scion', 'smart', 'Subaru',
+    'Suzuki', 'Tesla', 'Toyota', 'Volkswagen', 'Volvo'
+  ];
+
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: currentYear - 1990 + 1 }, (_, index) => (
+    <option key={index} value={currentYear - index}>
+      {currentYear - index}
+    </option>
+  ));
 
   if (email) {
     // set email to local storage
@@ -94,28 +109,43 @@ const Home = () => {
           <h3>Enter Car Details</h3>
           {error && <Alert variant="danger">{error}</Alert>}
           <Form>
+            
+            <Form.Group className="mb-3" controlId="formBasicYear">
+            <Form.Select
+              value={year}
+              onChange={(e) => setYear(e.target.value)}
+              style={{ color: 'grey' }}
+            >
+              <option value="" disabled>
+                Select Year
+              </option>
+              {yearOptions}
+            </Form.Select>
+            </Form.Group>
+
+            <Form.Group className="mb-3" controlId="formBasicPassword">
+            <Form.Select
+              value={make}
+              onChange={(e) => setMake(e.target.value)}
+              style={{ color: 'grey' }}
+              placeholder="Car Make"
+            >
+              <option value="" disabled style={{ color: 'grey' }}>
+                Car Make
+              </option>
+              {carMakeOptions.map((option, index) => (
+                <option key={index} value={option}>
+                  {option}
+                </option>
+              ))}
+            </Form.Select>
+            </Form.Group>
+
             <Form.Group className="mb-3" controlId="formBasicEmail">
               <Form.Control
                 type="text"
                 placeholder="Car Model"
                 onChange={(e) => setModel(e.target.value)}
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3" controlId="formBasicPassword">
-              <Form.Control
-                type="text"
-                placeholder="Car Make"
-                onChange={(e) => setMake(e.target.value)}
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3" controlId="formBasicPassword">
-              <Form.Control
-                type="number"
-                step="1"
-                placeholder="Car Year"
-                onChange={(e) => setYear(e.target.value)}
               />
             </Form.Group>
 
@@ -129,11 +159,21 @@ const Home = () => {
             </Form.Group>
 
             <Form.Group className="mb-3" controlId="formBasicPassword">
-              <Form.Control
-                type="text"
-                placeholder="Car Condition"
-                onChange={(e) => setCondition(e.target.value)}
-              />
+            <Form.Control
+              as="select"
+              style={{ color: 'grey' }}
+              placeholder="Car Condition"
+              onChange={(e) => setCondition(e.target.value)}
+            >
+              <option value="" disabled style={{ color: 'grey' }}>
+                Car Condition
+              </option>
+              <option value="excellent" title="Excellent Condition: Vehicle looks new & is in excellent mechanical condition.">Excellent</option>
+              <option value="very good" title="Very Good Condition: Minor cosmetic defects & is in excellent mechanical condition.">Very Good</option>
+              <option value="good" title="Good Condition: Some repairable cosmetic defects & is free of major mechanical problems.">Good</option>
+              <option value="fair" title="Fair Condition: Some cosmetic defects that require repairing /replacing.">Fair</option>
+              <option value="poor" title="Poor Condition: Severe wear or damage, not in good working condition.">Poor</option>
+            </Form.Control>
             </Form.Group>
 
             <Form.Group className="mb-3" controlId="formBasicPassword">
