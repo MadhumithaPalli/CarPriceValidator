@@ -3,10 +3,9 @@ import { useNavigate } from "react-router";
 import { useUserAuth } from "../../context/userAuthContext";
 import { useState, useRef } from "react";
 import BarGraph from "./subcomponents/BarGraph"
+import Login from "./Login";
 
 const Home = () => {
-  const { logOut, user } = useUserAuth();
-  const { email } = user;
   const [model, setModel] = useState("");
   const [make, setMake] = useState("");
   const [year, setYear] = useState("");
@@ -22,6 +21,8 @@ const Home = () => {
   const [price, setPrice] = useState("");
   const [predictionConfidence, setPredictionConfidence] = useState("");
   const [error, setError] = useState("");
+  const { user, logOut } = useUserAuth();
+  const [isOpen, setIsOpen] = useState(false);
 
   const carDetails = {
     model: model,
@@ -29,7 +30,7 @@ const Home = () => {
     year: year,
     mileage: mileage,
     price: price,
-    condition: condition
+    condition: condition,
   };
 
 const sellerDetails = {
@@ -42,12 +43,51 @@ const sellerDetails = {
 }
 
   const carMakeOptions = [
-    'Acura', 'Aston Martin', 'Audi', 'Bentley', 'BMW', 'Buick', 'Cadillac', 'Chevrolet',
-    'Chrysler', 'Dodge', 'Ferrari', 'FIAT', 'Fisker', 'Ford', 'GMC', 'Honda', 'Hyundai',
-    'INFINITI', 'Jaguar', 'Jeep', 'Kia', 'Lamborghini', 'Land Rover', 'Lexus', 'Lincoln',
-    'Maserati', 'Maybach', 'Mazda', 'McLaren', 'Mercedes-Benz', 'MINI', 'Mitsubishi',
-    'Nissan', 'Porsche', 'Ram', 'Rolls-Royce', 'Saab', 'Scion', 'smart', 'Subaru',
-    'Suzuki', 'Tesla', 'Toyota', 'Volkswagen', 'Volvo'
+    "Acura",
+    "Aston Martin",
+    "Audi",
+    "Bentley",
+    "BMW",
+    "Buick",
+    "Cadillac",
+    "Chevrolet",
+    "Chrysler",
+    "Dodge",
+    "Ferrari",
+    "FIAT",
+    "Fisker",
+    "Ford",
+    "GMC",
+    "Honda",
+    "Hyundai",
+    "INFINITI",
+    "Jaguar",
+    "Jeep",
+    "Kia",
+    "Lamborghini",
+    "Land Rover",
+    "Lexus",
+    "Lincoln",
+    "Maserati",
+    "Maybach",
+    "Mazda",
+    "McLaren",
+    "Mercedes-Benz",
+    "MINI",
+    "Mitsubishi",
+    "Nissan",
+    "Porsche",
+    "Ram",
+    "Rolls-Royce",
+    "Saab",
+    "Scion",
+    "smart",
+    "Subaru",
+    "Suzuki",
+    "Tesla",
+    "Toyota",
+    "Volkswagen",
+    "Volvo",
   ];
 
   const currentYear = new Date().getFullYear();
@@ -84,7 +124,11 @@ const sellerDetails = {
   //  go to selling page and pass the car details as props to the selling page
   const handleSelling = async () => {
     try {
-      navigate("/sell", { state: { carDetails: carDetails } });
+      if (user !== null) {
+        navigate("/sell", { state: { carDetails: carDetails } });
+      } else {
+        setIsOpen(true);
+      }
     } catch (error) {
       console.log(error.message);
     }
@@ -92,12 +136,11 @@ const sellerDetails = {
 
   const predict = async () => {
     try {
-      const options = 
-      {
+      const options = {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(carDetails)
-      }
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(carDetails),
+      };
 
       fetch("http://localhost:5069/model", options)
       .then(response => response.json())
@@ -290,8 +333,6 @@ const sellerDetails = {
       <div class="d-flex justify-content-center">
         <BarGraph/>
       </div>
-      
-            
     </>
   );
 };

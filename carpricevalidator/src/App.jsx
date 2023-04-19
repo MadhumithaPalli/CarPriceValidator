@@ -8,13 +8,14 @@ import Login from "./components/Login";
 import Signup from "./components/Signup";
 import Selling from "./components/Selling";
 import "./App.css";
+import ProtectedRoute from "./components/ProtectedRoute";
 function App() {
   return (
     <UserAuthContextProvider>
       <Routes>
-        <Route path="/home" element={<Home />} />
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<Home />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/sell" element={<Selling />} />
       </Routes>
     </UserAuthContextProvider>
