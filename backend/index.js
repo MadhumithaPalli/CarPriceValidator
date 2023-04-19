@@ -64,15 +64,14 @@ app.post("/model", async (req, res) => {
       "fair": 1,
       "good": 2,
       "excellent": 3,
-      "like new": 3,
       "new": 4,
       }
 
     let featureArray = [parseInt(carInfo.year), carModels[carInfo.make][carInfo.model], conditionEncode[carInfo.condition], parseFloat(carInfo.mileage)]
 
     //SCALE THE NUMERIC VALUES
-    const std = [9.200451033514081, 2.199239500419152, 2.190692871697908, 176266.83642522214]
-    const mean = [2011.0181361520472, 2.758601108630125, 9.808964681763117, 94841.79498648774]
+    const std = [5.983196967903828, 0.6982925555293396, 0.5582579709538072, 63249.75882080384]
+    const mean = [2012.1699242085258, 1.1047308258662971, 2.451727335212359, 90525.77734928198]
     for (let i = 0; i < featureArray.length; i++) 
     {
       featureArray[i] = (featureArray[i] - mean[i]) / std[i];
@@ -92,7 +91,7 @@ app.post("/model", async (req, res) => {
     const data =
     {
       prediction: prediction,
-      confidence: 0.80
+      confidence: 0.84
     }
 
     res.send(JSON.stringify(data));
@@ -104,7 +103,7 @@ app.post("/model", async (req, res) => {
     const data =
     {
       prediction: -1,
-      confidence: 0.80
+      confidence: 0.76
     }
 
     res.send(JSON.stringify(data));

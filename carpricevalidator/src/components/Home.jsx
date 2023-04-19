@@ -5,6 +5,8 @@ import { useState, useRef } from "react";
 import BarGraph from "./subcomponents/BarGraph"
 import Login from "./Login";
 
+import models from "./jsons/carModels"
+
 const Home = () => {
   const [model, setModel] = useState("");
   const [make, setMake] = useState("");
@@ -97,20 +99,6 @@ const sellerDetails = {
     </option>
   ));
 
-  if (email) {
-    // set email to local storage
-    localStorage.setItem("email", email);
-  }
-
-  const emailFromLocalStorage = localStorage.getItem("email");
-  const displayName = emailFromLocalStorage.split("@")[0];
-  localStorage.setItem("displayName", displayName);
-  let displayNameFromLocalStorage = localStorage.getItem("displayName");
-  displayNameFromLocalStorage =
-    displayNameFromLocalStorage.charAt(0).toUpperCase() +
-    displayNameFromLocalStorage.slice(1);
-  user.displayName = displayNameFromLocalStorage;
-
   const navigate = useNavigate();
   const handleLogout = async () => {
     try {
@@ -197,11 +185,26 @@ const sellerDetails = {
               </Form.Group>
 
               <Form.Group className="mb-3" controlId="formBasicEmail">
-                <Form.Control
-                  type="text"
+                <Form.Select
+                  value={model}
+                  disabled={!make}
+                  readOnly={!make}
                   placeholder="Car Model"
                   onChange={(e) => setModel(e.target.value)}
-                />
+                >
+                  {
+                    make ?
+                      models[make.toLowerCase()].map((option, index) => (
+                        <option key={index} value={option}>
+                          {option}
+                        </option>
+                      ))
+                    :
+                    <option value="" disabled style={{ color: 'grey' }}>
+                      Car Model
+                    </option>
+                  }
+                </Form.Select>
               </Form.Group>
 
               <Form.Group className="mb-3" controlId="formBasicPassword">
@@ -216,6 +219,7 @@ const sellerDetails = {
               <Form.Group className="mb-3" controlId="formBasicPassword">
               <Form.Control
                 as="select"
+                value={condition}
                 style={{ color: 'grey' }}
                 placeholder="Car Condition"
                 onChange={(e) => setCondition(e.target.value)}
@@ -330,7 +334,7 @@ const sellerDetails = {
         </div>
       </div>
 
-      <div class="d-flex justify-content-center">
+      <div className="d-flex justify-content-center">
         <BarGraph/>
       </div>
     </>
