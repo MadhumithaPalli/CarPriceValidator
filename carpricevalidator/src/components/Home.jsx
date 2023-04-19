@@ -2,6 +2,7 @@ import { Button, Container, Form, Alert } from "react-bootstrap";
 import { useNavigate } from "react-router";
 import { useUserAuth } from "../../context/userAuthContext";
 import { useState, useRef } from "react";
+import BarGraph from "./subcomponents/BarGraph"
 
 const Home = () => {
   const { logOut, user } = useUserAuth();
@@ -11,7 +12,15 @@ const Home = () => {
   const [year, setYear] = useState("");
   const [mileage, setMileage] = useState("");
   const [condition, setCondition] = useState("");
+
+  const [sellerName, setSellerName] = useState("");
+  const [sellerEmail, setSellerEmail] = useState("");
+  const [sellerPhoneNumber, setSellerPhoneNumber] = useState("");
+  const [sellerState, setSellerState] = useState("");
+  const [sellerCity, setSellerCity] = useState("");
+  const [sellerZip, setSellerZip] = useState("");
   const [price, setPrice] = useState("");
+  const [predictionConfidence, setPredictionConfidence] = useState("");
   const [error, setError] = useState("");
 
   const carDetails = {
@@ -22,6 +31,16 @@ const Home = () => {
     price: price,
     condition: condition
   };
+
+const sellerDetails = {
+  name: sellerName,
+  email: sellerEmail,
+  phoneNumber: sellerPhoneNumber,
+  state: sellerState,
+  city: sellerCity,
+  zip: sellerZip
+}
+
   const carMakeOptions = [
     'Acura', 'Aston Martin', 'Audi', 'Bentley', 'BMW', 'Buick', 'Cadillac', 'Chevrolet',
     'Chrysler', 'Dodge', 'Ferrari', 'FIAT', 'Fisker', 'Ford', 'GMC', 'Honda', 'Hyundai',
@@ -42,7 +61,7 @@ const Home = () => {
     // set email to local storage
     localStorage.setItem("email", email);
   }
-  const inputRef = useRef();
+
   const emailFromLocalStorage = localStorage.getItem("email");
   const displayName = emailFromLocalStorage.split("@")[0];
   localStorage.setItem("displayName", displayName);
@@ -84,7 +103,8 @@ const Home = () => {
       .then(response => response.json())
       .then(data => {
         console.log("Prediction is " + data.prediction)
-        setPrice(data.prediction)
+        setPrice(parseFloat(data.prediction))
+        setPredictionConfidence(parseFloat(data.confidence))
       })
       .catch(error => console.error(error));
 
@@ -95,114 +115,183 @@ const Home = () => {
 
   return (
     <>
-      <Container>
-        <div className="p-4 box mt-3 text-center">
-          Hello Welcome {user.displayName} <br />
-        </div>
-        <div className="d-grid gap-2">
-          <Button variant="primary" onClick={handleLogout}>
-            Log out
-          </Button>
-        </div>
-        <div className="p-4 box mt-3 text-center">
-          <h2 className="mb-3">Car Price Validator</h2>
-          <h3>Enter Car Details</h3>
-          {error && <Alert variant="danger">{error}</Alert>}
-          <Form>
-            
-            <Form.Group className="mb-3" controlId="formBasicYear">
-            <Form.Select
-              value={year}
-              onChange={(e) => setYear(e.target.value)}
-              style={{ color: 'grey' }}
-            >
-              <option value="" disabled>
-                Select Year
-              </option>
-              {yearOptions}
-            </Form.Select>
-            </Form.Group>
-
-            <Form.Group className="mb-3" controlId="formBasicPassword">
-            <Form.Select
-              value={make}
-              onChange={(e) => setMake(e.target.value)}
-              style={{ color: 'grey' }}
-              placeholder="Car Make"
-            >
-              <option value="" disabled style={{ color: 'grey' }}>
-                Car Make
-              </option>
-              {carMakeOptions.map((option, index) => (
-                <option key={index} value={option}>
-                  {option}
+      <div className="row">
+        <div className="col-6">
+          <div className="p-4 box mt-3 text-center">
+            <h2 className="mb-3">Car Price Validator</h2>
+            <h3>Enter Car Details</h3>
+            {error && <Alert variant="danger">{error}</Alert>}
+            <Form>
+              <Form.Group className="mb-3" controlId="formBasicYear">
+              <Form.Select
+                value={year}
+                onChange={(e) => setYear(e.target.value)}
+                style={{ color: 'grey' }}
+              >
+                <option value="" disabled>
+                  Select Year
                 </option>
-              ))}
-            </Form.Select>
-            </Form.Group>
+                {yearOptions}
+              </Form.Select>
+              </Form.Group>
 
-            <Form.Group className="mb-3" controlId="formBasicEmail">
+              <Form.Group className="mb-3" controlId="formBasicPassword">
+              <Form.Select
+                value={make}
+                onChange={(e) => setMake(e.target.value)}
+                style={{ color: 'grey' }}
+                placeholder="Car Make"
+              >
+                <option value="" disabled style={{ color: 'grey' }}>
+                  Car Make
+                </option>
+                {carMakeOptions.map((option, index) => (
+                  <option key={index} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </Form.Select>
+              </Form.Group>
+
+              <Form.Group className="mb-3" controlId="formBasicEmail">
+                <Form.Control
+                  type="text"
+                  placeholder="Car Model"
+                  onChange={(e) => setModel(e.target.value)}
+                />
+              </Form.Group>
+
+              <Form.Group className="mb-3" controlId="formBasicPassword">
+                <Form.Control
+                  type="number"
+                  step="0.01"
+                  placeholder="Car Mileage"
+                  onChange={(e) => setMileage(e.target.value)}
+                />
+              </Form.Group>
+
+              <Form.Group className="mb-3" controlId="formBasicPassword">
               <Form.Control
-                type="text"
-                placeholder="Car Model"
-                onChange={(e) => setModel(e.target.value)}
-              />
-            </Form.Group>
+                as="select"
+                style={{ color: 'grey' }}
+                placeholder="Car Condition"
+                onChange={(e) => setCondition(e.target.value)}
+              >
+                <option value="" disabled style={{ color: 'grey' }}>
+                  Car Condition
+                </option>
+                <option value="new" title="New Condition: Car is practically new, barely driven.">New</option>
+                <option value="excellent" title="Excellent Condition: Vehicle looks new & is in excellent mechanical condition.">Excellent</option>
+                <option value="good" title="Good Condition: Some repairable cosmetic defects & is free of major mechanical problems.">Good</option>
+                <option value="fair" title="Fair Condition: Some cosmetic defects that require repairing /replacing.">Fair</option>
+                <option value="salvage" title="Poor Condition: Severe wear or damage, not in good working condition.">Salvage</option>
+              </Form.Control>
+              </Form.Group>
+            </Form>
 
-            <Form.Group className="mb-3" controlId="formBasicPassword">
-              <Form.Control
-                type="number"
-                step="0.01"
-                placeholder="Car Mileage"
-                onChange={(e) => setMileage(e.target.value)}
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3" controlId="formBasicPassword">
-            <Form.Control
-              as="select"
-              style={{ color: 'grey' }}
-              placeholder="Car Condition"
-              onChange={(e) => setCondition(e.target.value)}
-            >
-              <option value="" disabled style={{ color: 'grey' }}>
-                Car Condition
-              </option>
-              <option value="excellent" title="Excellent Condition: Vehicle looks new & is in excellent mechanical condition.">Excellent</option>
-              <option value="very good" title="Very Good Condition: Minor cosmetic defects & is in excellent mechanical condition.">Very Good</option>
-              <option value="good" title="Good Condition: Some repairable cosmetic defects & is free of major mechanical problems.">Good</option>
-              <option value="fair" title="Fair Condition: Some cosmetic defects that require repairing /replacing.">Fair</option>
-              <option value="poor" title="Poor Condition: Severe wear or damage, not in good working condition.">Poor</option>
-            </Form.Control>
-            </Form.Group>
-
-            <Form.Group className="mb-3" controlId="formBasicPassword">
-              <Form.Control
-                type="text"
-                placeholder="Car Price"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-              />
-            </Form.Group>
-          </Form>
+            <Button className="col-10" variant="primary" onClick={predict}>
+              Predict
+            </Button>
+          </div>
         </div>
 
-        <div className="d-grid gap-2">
-          <Button variant="primary" onClick={predict}>
-            Predict
-          </Button>
-        </div>
+        <div className="col-6">
+          <div className="p-4 box mt-3 text-center">
+            <h2 className="mb-3">Car Sell Information</h2>
+            <h3>Enter Selling Information</h3>
+            {error && <Alert variant="danger">{error}</Alert>}
+            <Form>
+              <Form.Group controlId="formFile" className="mb-3">
+                <Form.Control type="file" />
+              </Form.Group>
+            
+              <Form.Group className="mb-3" controlId="formBasicEmail">
+                <Form.Control
+                  type="text"
+                  placeholder="Seller's Name"
+                  onChange={(e) => setSellerName(e.target.value)}
+                />
+              </Form.Group>
 
-        <div className="p-4 box mt-3 text-center">
-          <h2 className="mb-3">Sell Vehicle Page</h2>
-        </div>
+              <Form.Group className="mb-3" controlId="formBasicEmail">
+                <Form.Control
+                  type="text"
+                  placeholder="Contact Email"
+                  onChange={(e) => setSellerEmail(e.target.value)}
+                />
+              </Form.Group>
 
-        <div className="d-grid gap-2">
-          <Button variant="primary" onClick={handleSelling}>
-            Sell Vehicle
-          </Button>
+              <Form.Group className="mb-3" controlId="formBasicEmail">
+                <Form.Control
+                  type="text"
+                  placeholder="Phone Number"
+                  onChange={(e) => setSellerPhoneNumber(e.target.value)}
+                />
+              </Form.Group>
+
+              <div className="row">
+                <div className="col-7">
+                  <Form.Group className="mb-3" controlId="formBasicEmail">
+                    <Form.Control
+                      type="text"
+                      placeholder="State"
+                      onChange={(e) => setSellerState(e.target.value)}
+                    />
+                  </Form.Group>
+                </div>
+                <div className="col">
+                  <Form.Group className="mb-3" controlId="formBasicEmail">
+                    <Form.Control
+                      type="text"
+                      placeholder="City"
+                      onChange={(e) => setSellerCity(e.target.value)}
+                    />
+                  </Form.Group>
+                </div>
+                <div className="col">
+                  <Form.Group className="mb-3" controlId="formBasicEmail">
+                    <Form.Control
+                      type="text"
+                      placeholder="Zip"
+                      onChange={(e) => setSellerZip(e.target.value)}
+                    />
+                  </Form.Group>
+                </div>
+              </div>
+
+              <Form.Group className="mb-3" controlId="formBasicPassword">
+                <Form.Control
+                  type="text"
+                  placeholder="Car Price"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                />
+              </Form.Group>
+            </Form>
+
+            <Button className="col-10" variant="primary" onClick={handleSelling}>
+                Sell
+            </Button>
+          </div>
         </div>
-      </Container>
+      </div>
+
+      <div className="container-fluid text-center">
+        <div className="display-3">
+            PREDICTION PRICE RANGE
+        </div>
+        <div className="display-4">
+            {
+            (predictionConfidence * price).toFixed(2).toString() + " - " + ((2 - predictionConfidence) * price).toFixed(2).toString()
+            }
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-center">
+        <BarGraph/>
+      </div>
+      
+            
     </>
   );
 };

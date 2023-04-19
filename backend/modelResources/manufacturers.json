@@ -1,5 +1,4 @@
-[
-"acura",
+["acura",
 "alfa-romeo",
 "aston-martin",
 "audi",
@@ -8,7 +7,6 @@
 "cadillac",
 "chevrolet",
 "chrysler",
-"datsun",
 "dodge",
 "ferrari",
 "fiat",
@@ -39,5 +37,4 @@
 "tesla",
 "toyota",
 "volkswagen",
-"volvo"
-]
+"volvo"]
