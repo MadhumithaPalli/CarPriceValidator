@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { useUserAuth } from "../../context/userAuthContext";
 import { useState, useRef } from "react";
 import BarGraph from "./subcomponents/BarGraph"
+import LineGraph from "./subcomponents/LineGraph"
 import Login from "./Login";
 
 import models from "./jsons/carModels"
@@ -21,10 +22,14 @@ const Home = () => {
   const [sellerCity, setSellerCity] = useState("");
   const [sellerZip, setSellerZip] = useState("");
   const [price, setPrice] = useState("");
+  const [predictedPrice, setPredictedPrice] = useState("");
   const [predictionConfidence, setPredictionConfidence] = useState("");
   const [error, setError] = useState("");
   const { user, logOut } = useUserAuth();
   const [isOpen, setIsOpen] = useState(false);
+
+  //graphs stuff
+  const [predictors, setPredictors] = useState({})
 
   const carDetails = {
     model: model,
@@ -134,8 +139,11 @@ const sellerDetails = {
       .then(response => response.json())
       .then(data => {
         console.log("Prediction is " + data.prediction)
-        setPrice(parseFloat(data.prediction))
         setPredictionConfidence(parseFloat(data.confidence))
+
+        setPredictors(data.predictors)
+        setPrice(parseFloat(data.prediction))
+        setPredictedPrice(parseFloat(data.prediction))
       })
       .catch(error => console.error(error));
 
@@ -260,24 +268,29 @@ const sellerDetails = {
                 />
               </Form.Group>
 
-              <Form.Group className="mb-3" controlId="formBasicEmail">
-                <Form.Control
-                  type="text"
-                  placeholder="Contact Email"
-                  onChange={(e) => setSellerEmail(e.target.value)}
-                />
-              </Form.Group>
-
-              <Form.Group className="mb-3" controlId="formBasicEmail">
-                <Form.Control
-                  type="text"
-                  placeholder="Phone Number"
-                  onChange={(e) => setSellerPhoneNumber(e.target.value)}
-                />
-              </Form.Group>
+              <div className="row">
+                <div className="col-6">
+                    <Form.Group className="mb-3" controlId="formBasicEmail">
+                      <Form.Control
+                        type="text"
+                        placeholder="Contact Email"
+                        onChange={(e) => setSellerEmail(e.target.value)}
+                      />
+                    </Form.Group>
+                  </div>
+                  <div className="col-6">
+                    <Form.Group className="mb-3" controlId="formBasicEmail">
+                      <Form.Control
+                        type="text"
+                        placeholder="Phone Number"
+                        onChange={(e) => setSellerPhoneNumber(e.target.value)}
+                      />
+                    </Form.Group>
+                  </div>
+              </div>
 
               <div className="row">
-                <div className="col-7">
+                <div className="col-6">
                   <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Control
                       type="text"
@@ -334,9 +347,17 @@ const sellerDetails = {
         </div>
       </div>
 
-      <div className="d-flex justify-content-center">
-        <BarGraph/>
-      </div>
+      {predictedPrice ?
+        <div className="d-flex justify-content-center">
+          <BarGraph data={predictors.conditions}/>
+
+          <div className="text-center">
+            <LineGraph data={predictors.mileage}/>
+            Due to a mileage of {mileage}, ${(predictors.mileage.price[predictors.mileage.price.length - 1] - predictedPrice).toFixed(2)} were lost.
+          </div>
+        </div>
+        : <></>
+      } 
     </>
   );
 };

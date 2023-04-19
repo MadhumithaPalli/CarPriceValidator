@@ -43,20 +43,16 @@ function standardScaler(array) {
   return scaledArray;
 }
 
-app.post("/model", async (req, res) => {
-  try {
-    const model = await tf.loadLayersModel(
+async function predict(year, make, model, condition, mileage) //predict given values.
+{
+    //retrieve the model
+    const mlModel = await tf.loadLayersModel(
       "http://localhost:5069/model/model.json"
     );
-    const carInfo = req.body;
-
-    carInfo.make = carInfo.make.toLowerCase();
-    carInfo.model = carInfo.model.toLowerCase();
-    carInfo.condition = carInfo.condition.toLowerCase();
 
     //Encoded manufacturers
     let makeArray = Array(manufacturers.length).fill(0);
-    makeArray[manufacturers.indexOf(carInfo.make)] = 1; //Set which manufacturer it is.
+    makeArray[manufacturers.indexOf(make)] = 1; //Set which manufacturer it is.
   
     //Set up the numeric values
     const conditionEncode = {
@@ -67,11 +63,11 @@ app.post("/model", async (req, res) => {
       "new": 4,
       }
 
-    let featureArray = [parseInt(carInfo.year), carModels[carInfo.make][carInfo.model], conditionEncode[carInfo.condition], parseFloat(carInfo.mileage)]
+    let featureArray = [year, carModels[make][model], conditionEncode[condition], mileage]
 
     //SCALE THE NUMERIC VALUES
-    const std = [5.983196967903828, 0.6982925555293396, 0.5582579709538072, 63249.75882080384]
-    const mean = [2012.1699242085258, 1.1047308258662971, 2.451727335212359, 90525.77734928198]
+    const std = [6.0088270199943725, 0.7007531240326841, 0.5598212710061845, 67433.14457317894] //this is based on the model trained.
+    const mean = [2012.131193755739, 1.1055213161032302, 2.4497704315886133, 91953.27159320477]
     for (let i = 0; i < featureArray.length; i++) 
     {
       featureArray[i] = (featureArray[i] - mean[i]) / std[i];
@@ -79,19 +75,59 @@ app.post("/model", async (req, res) => {
   
     //Merge to create the full feature array
     featureArray = featureArray.concat(makeArray)
-    const inputData = tf.tensor2d([featureArray]);
+    const inputData = tf.tensor2d([featureArray])
+    let prediction = mlModel.predict(inputData)
 
-    console.log(featureArray)
-    
-    let prediction = model.predict(inputData)
     const predictionArray = await prediction.array();
   
-    prediction = predictionArray[0]
+    prediction = predictionArray[0] // the main prediction.
+    return parseFloat(prediction[0]).toFixed(2) //round it to two decimal
+}
+
+app.post("/model", async (req, res) => {
+  try {
+    const carInfo = req.body;
+
+    carInfo.make = carInfo.make.toLowerCase();
+    carInfo.model = carInfo.model.toLowerCase();
+    carInfo.condition = carInfo.condition.toLowerCase();
+    carInfo.mileage = parseFloat(carInfo.mileage)
+    carInfo.year = parseInt(carInfo.year)
+  
+    let prediction = await predict(carInfo.year, carInfo.make, carInfo.model, carInfo.condition, carInfo.mileage) // the main prediction.
+
+    //Calculate possible values for weight
+    let predictors = {}
+
+    let curMileage = carInfo.mileage
+    predictors.mileage = {feature: [], price: []}
+    if(curMileage > 0)
+    {
+      do
+      {
+        predictors.mileage.feature.push(curMileage)
+        predictors.mileage.price.push(await predict(carInfo.year, carInfo.make, carInfo.model, carInfo.condition, curMileage))
+        curMileage = Math.floor(curMileage - (carInfo.mileage/10));
+      }while(curMileage >= 0)
+    }
+
+    //Calculate the rest of conditions
+    predictors.conditions = {[carInfo.condition]: prediction}
+    let conditions = ["salvage", "fair", "good", "excellent", "new"]
+    conditions = conditions.filter(e => e != carInfo.condition)
+    do
+    {
+      let curCon = conditions.shift()
+      predictors.conditions[curCon] = await predict(carInfo.year, carInfo.make, carInfo.model, curCon, carInfo.mileage)
+    }while(conditions.length > 0)
+
+    console.log(predictors)
   
     const data =
     {
       prediction: prediction,
-      confidence: 0.84
+      confidence: 0.84,
+      predictors: predictors
     }
 
     res.send(JSON.stringify(data));
