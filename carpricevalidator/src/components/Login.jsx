@@ -7,7 +7,7 @@ import { useUserAuth } from "../../context/userAuthContext";
 import { useLocation } from "react-router-dom";
 import Modal from "react-bootstrap/Modal";
 
-const Login = ({ setIsOpen }) => {
+const Login = ({ showModal, handleModal }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -20,8 +20,8 @@ const Login = ({ setIsOpen }) => {
     setError("");
     try {
       await logIn(email, password);
-      setIsOpen(false);
-      navigate("/sell", { state: { from: state } });
+      handleModal();
+      // navigate("/sell", { state: { from: state } });
     } catch (err) {
       setError(err.message);
     }
@@ -30,7 +30,7 @@ const Login = ({ setIsOpen }) => {
     e.preventDefault();
     try {
       await googleSignIn();
-      setIsOpen(false);
+      handleModal();
       navigate("/sell", { state: { from: state } });
     } catch (error) {
       console.log(error.message);
@@ -39,7 +39,7 @@ const Login = ({ setIsOpen }) => {
 
   return (
     <>
-      <Modal show={setIsOpen} onHide={setIsOpen}>
+      <Modal show={showModal} onHide={handleModal}>
         <div className="p-4 box">
           <h2 className="mb-3">Car Price Validator</h2>
           {error && <Alert variant="danger">{error}</Alert>}

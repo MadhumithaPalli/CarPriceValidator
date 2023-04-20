@@ -137,7 +137,7 @@ const Home = () => {
             console.log(res);
             if (res.status === 200) {
               alert("Car details submitted successfully");
-              navigate("/selling");
+              navigate("/sell");
             } else {
               alert("Something went wrong");
             }
