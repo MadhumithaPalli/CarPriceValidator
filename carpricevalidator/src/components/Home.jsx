@@ -171,8 +171,7 @@ const sellerDetails = {
       <div className="row">
         <div className="col-6">
           <div className="p-4 box mt-3">
-            <h2 className="mb-3">Car Price Validator</h2>
-            <h3>Enter Car Details</h3>
+          <h2 className="mb-3">Car Information</h2>
             {error && <Alert variant="danger">{error}</Alert>}
             <Form noValidate validated={predictValidated} onSubmit={predictSubmit}>
               <Form.Group className="mb-3" controlId="formBasicYear">
@@ -195,7 +194,10 @@ const sellerDetails = {
                 <Form.Label>Make</Form.Label>
                 <Form.Select
                   value={make}
-                  onChange={(e) => setMake(e.target.value)}
+                  onChange={(e) => {
+                    setMake(e.target.value)
+                    setModel("") //changed of make means model need to be restarted.
+                  }}
                   style={{ color: 'grey' }}
                   required
                   placeholder="Car Make"
@@ -219,8 +221,8 @@ const sellerDetails = {
                   disabled={!make}
                   readOnly={!make}
                   placeholder="Car Model"
-                  required
                   onChange={(e) => {setModel(e.target.value)}}
+                  required
                 >
                   <option value="" disabled style={{ color: 'grey' }}>
                     Car Model
@@ -241,9 +243,11 @@ const sellerDetails = {
                 <Form.Label>Mileage</Form.Label>
                 <Form.Control
                   type="number"
+                  value={mileage}
                   step="100"
                   placeholder="Car Mileage"
                   onChange={(e) => setMileage(e.target.value)}
+                  required
                 />
                 <Form.Control.Feedback type="invalid">Please input the car's mileage.</Form.Control.Feedback>
               </Form.Group>
@@ -270,22 +274,25 @@ const sellerDetails = {
                 <Form.Control.Feedback type="invalid">Please select the car's condition.</Form.Control.Feedback>
               </Form.Group>
 
-              <Button type="submit" className="col-10" variant="primary">Predict</Button>
+              <div className="text-center">
+                <Button type="submit" className="col-10" variant="primary">Predict</Button>
+              </div>
             </Form>
           </div>
         </div>
 
         <div className="col-6">
-          <div className="p-4 box mt-3 text-center">
-            <h2 className="mb-3">Car Sell Information</h2>
-            <h3>Enter Selling Information</h3>
+          <div className="p-4 box mt-3">
+            <h2 className="mb-3">Selling Information</h2>
             {error && <Alert variant="danger">{error}</Alert>}
             <Form>
+              <Form.Label>Car Image</Form.Label>
               <Form.Group controlId="formFile" className="mb-3">
                 <Form.Control type="file" />
               </Form.Group>
             
               <Form.Group className="mb-3" controlId="formBasicEmail">
+                <Form.Label>Seller's Name</Form.Label>
                 <Form.Control
                   type="text"
                   placeholder="Seller's Name"
@@ -295,6 +302,7 @@ const sellerDetails = {
 
               <div className="row">
                 <div className="col-6">
+                    <Form.Label>Seller's Email</Form.Label>
                     <Form.Group className="mb-3" controlId="formBasicEmail">
                       <Form.Control
                         type="text"
@@ -304,6 +312,7 @@ const sellerDetails = {
                     </Form.Group>
                   </div>
                   <div className="col-6">
+                    <Form.Label>Seller's Phone Number</Form.Label>
                     <Form.Group className="mb-3" controlId="formBasicEmail">
                       <Form.Control
                         type="text"
@@ -316,6 +325,7 @@ const sellerDetails = {
 
               <div className="row">
                 <div className="col-6">
+                  <Form.Label>Seller's State</Form.Label>
                   <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Control
                       type="text"
@@ -326,6 +336,7 @@ const sellerDetails = {
                 </div>
                 <div className="col">
                   <Form.Group className="mb-3" controlId="formBasicEmail">
+                    <Form.Label>Seller's City</Form.Label>
                     <Form.Control
                       type="text"
                       placeholder="City"
@@ -335,6 +346,7 @@ const sellerDetails = {
                 </div>
                 <div className="col">
                   <Form.Group className="mb-3" controlId="formBasicEmail">
+                    <Form.Label>Seller's Zip</Form.Label>
                     <Form.Control
                       type="text"
                       placeholder="Zip"
@@ -345,6 +357,7 @@ const sellerDetails = {
               </div>
 
               <Form.Group className="mb-3" controlId="formBasicPassword">
+                <Form.Label>Car Price</Form.Label>
                 <Form.Control
                   type="text"
                   placeholder="Car Price"
@@ -354,9 +367,11 @@ const sellerDetails = {
               </Form.Group>
             </Form>
 
-            <Button className="col-10" variant="primary" onClick={handleSelling}>
-                Sell
-            </Button>
+            <div className="text-center">
+              <Button className="col-10" variant="primary" onClick={handleSelling}>
+                  Sell
+              </Button>
+            </div>
           </div>
         </div>
       </div>
