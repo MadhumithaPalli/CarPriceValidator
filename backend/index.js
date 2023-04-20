@@ -1,9 +1,10 @@
 import express from "express";
 import cors from "cors";
 import * as tf from "@tensorflow/tfjs";
+import multer from "multer";
 
-import carModels from "./modelResources/carModel.json" assert {type: "json"};
-import manufacturers from "./modelResources/manufacturers.json" assert {type: "json"};
+import carModels from "./modelResources/carModel.json" assert { type: "json" };
+import manufacturers from "./modelResources/manufacturers.json" assert { type: "json" };
 import admin from "firebase-admin";
 import serviceAccount from "./firebase-key.json" assert { type: "json" };
 
@@ -16,8 +17,8 @@ const __dirname = dirname(__filename);
 const app = express();
 
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.json({ extended: true }));
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname + "/public"));
 
 admin.initializeApp({
@@ -43,47 +44,57 @@ function standardScaler(array) {
   return scaledArray;
 }
 
-async function predict(year, make, model, condition, mileage) //predict given values.
-{
-    //retrieve the model
-    const mlModel = await tf.loadLayersModel(
-      "http://localhost:5069/model/model.json"
-    );
+async function predict(year, make, model, condition, mileage) {
+  //predict given values.
+  //retrieve the model
+  const mlModel = await tf.loadLayersModel(
+    "http://localhost:5069/model/model.json"
+  );
 
-    //Encoded manufacturers
-    let makeArray = Array(manufacturers.length).fill(0);
-    makeArray[manufacturers.indexOf(make)] = 1; //Set which manufacturer it is.
-  
-    //Set up the numeric values
-    const conditionEncode = {
-      'salvage': 0,
-      "fair": 1,
-      "good": 2,
-      "excellent": 3,
-      "new": 4,
-      }
+  //Encoded manufacturers
+  let makeArray = Array(manufacturers.length).fill(0);
+  makeArray[manufacturers.indexOf(make)] = 1; //Set which manufacturer it is.
 
-    let featureArray = [year, carModels[make][model], conditionEncode[condition], mileage]
+  //Set up the numeric values
+  const conditionEncode = {
+    salvage: 0,
+    fair: 1,
+    good: 2,
+    excellent: 3,
+    new: 4,
+  };
 
-    console.log(featureArray)
+  let featureArray = [
+    year,
+    carModels[make][model],
+    conditionEncode[condition],
+    mileage,
+  ];
 
-    //SCALE THE NUMERIC VALUES
-    const std = [6.0088270199943725, 0.7007531240326841, 0.5598212710061845, 67433.14457317894] //this is based on the model trained.
-    const mean = [2012.131193755739, 1.1055213161032302, 2.4497704315886133, 91953.27159320477]
-    for (let i = 0; i < featureArray.length; i++) 
-    {
-      featureArray[i] = (featureArray[i] - mean[i]) / std[i];
-    }
-  
-    //Merge to create the full feature array
-    featureArray = featureArray.concat(makeArray)
-    const inputData = tf.tensor2d([featureArray])
-    let prediction = mlModel.predict(inputData)
+  console.log(featureArray);
 
-    const predictionArray = await prediction.array();
-  
-    prediction = predictionArray[0] // the main prediction.
-    return parseFloat(prediction[0]).toFixed(2) //round it to two decimal
+  //SCALE THE NUMERIC VALUES
+  const std = [
+    6.0088270199943725, 0.7007531240326841, 0.5598212710061845,
+    67433.14457317894,
+  ]; //this is based on the model trained.
+  const mean = [
+    2012.131193755739, 1.1055213161032302, 2.4497704315886133,
+    91953.27159320477,
+  ];
+  for (let i = 0; i < featureArray.length; i++) {
+    featureArray[i] = (featureArray[i] - mean[i]) / std[i];
+  }
+
+  //Merge to create the full feature array
+  featureArray = featureArray.concat(makeArray);
+  const inputData = tf.tensor2d([featureArray]);
+  let prediction = mlModel.predict(inputData);
+
+  const predictionArray = await prediction.array();
+
+  prediction = predictionArray[0]; // the main prediction.
+  return parseFloat(prediction[0]).toFixed(2); //round it to two decimal
 }
 
 app.post("/model", async (req, res) => {
@@ -93,47 +104,61 @@ app.post("/model", async (req, res) => {
     carInfo.make = carInfo.make.toLowerCase();
     carInfo.model = carInfo.model.toLowerCase();
     carInfo.condition = carInfo.condition.toLowerCase();
-    carInfo.mileage = parseFloat(carInfo.mileage)
-    carInfo.year = parseInt(carInfo.year)
-  
-    let prediction = await predict(carInfo.year, carInfo.make, carInfo.model, carInfo.condition, carInfo.mileage) // the main prediction.
+    carInfo.mileage = parseFloat(carInfo.mileage);
+    carInfo.year = parseInt(carInfo.year);
+
+    let prediction = await predict(
+      carInfo.year,
+      carInfo.make,
+      carInfo.model,
+      carInfo.condition,
+      carInfo.mileage
+    ); // the main prediction.
 
     //Calculate possible values for weight
-    let predictors = {}
+    let predictors = {};
 
-    let curMileage = carInfo.mileage
-    predictors.mileage = {feature: [], price: []}
-    if(curMileage > 0)
-    {
-      do
-      {
-        predictors.mileage.feature.push(curMileage)
-        predictors.mileage.price.push(await predict(carInfo.year, carInfo.make, carInfo.model, carInfo.condition, curMileage))
-        curMileage = Math.floor(curMileage - (carInfo.mileage/10));
-      }while(curMileage >= 0)
+    let curMileage = carInfo.mileage;
+    predictors.mileage = { feature: [], price: [] };
+    if (curMileage > 0) {
+      do {
+        predictors.mileage.feature.push(curMileage);
+        predictors.mileage.price.push(
+          await predict(
+            carInfo.year,
+            carInfo.make,
+            carInfo.model,
+            carInfo.condition,
+            curMileage
+          )
+        );
+        curMileage = Math.floor(curMileage - carInfo.mileage / 10);
+      } while (curMileage >= 0);
     }
 
     //Calculate the rest of conditions
-    predictors.conditions = {[carInfo.condition]: prediction}
-    let conditions = ["salvage", "fair", "good", "excellent", "new"]
-    conditions = conditions.filter(e => e != carInfo.condition)
-    do
-    {
-      let curCon = conditions.shift()
-      predictors.conditions[curCon] = await predict(carInfo.year, carInfo.make, carInfo.model, curCon, carInfo.mileage)
-    }while(conditions.length > 0)
-  
-    const data =
-    {
+    predictors.conditions = { [carInfo.condition]: prediction };
+    let conditions = ["salvage", "fair", "good", "excellent", "new"];
+    conditions = conditions.filter((e) => e != carInfo.condition);
+    do {
+      let curCon = conditions.shift();
+      predictors.conditions[curCon] = await predict(
+        carInfo.year,
+        carInfo.make,
+        carInfo.model,
+        curCon,
+        carInfo.mileage
+      );
+    } while (conditions.length > 0);
+
+    const data = {
       prediction: prediction,
       confidence: 0.84,
-      predictors: predictors
-    }
+      predictors: predictors,
+    };
 
     res.send(JSON.stringify(data));
-  }
-  catch(error)
-  {
+  } catch (error) {
     res.statusMessage = "Error in prediction: " + error;
     res.status(400).end();
   }
@@ -142,10 +167,12 @@ app.post("/model", async (req, res) => {
 // function makeId(name, make, model) {
 //   return name + make + model;
 // }
+
+const upload = multer();
+
 app.post("/api/sell", async (req, res) => {
   try {
     const carInfo = req.body.car_info;
-
     const sellerInfo = req.body.seller_info;
     // make a unique id for the car from the seller's name and timestamp
     const id = sellerInfo.sellerName + Date.now();
@@ -154,11 +181,11 @@ app.post("/api/sell", async (req, res) => {
       seller_info: sellerInfo,
       uid: id,
     };
-
+    console.log(data);
     await db.collection("cars").doc(id).set(data);
     res.send("Success");
-  } catch {
-    res.send("Error");
+  } catch (error) {
+    res.status(400).send(error.message);
   }
 });
 

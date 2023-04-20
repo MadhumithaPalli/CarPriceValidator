@@ -20,7 +20,7 @@ const Login = ({ setIsOpen }) => {
     setError("");
     try {
       await logIn(email, password);
-
+      setIsOpen(false);
       navigate("/sell", { state: { from: state } });
     } catch (err) {
       setError(err.message);
@@ -30,7 +30,7 @@ const Login = ({ setIsOpen }) => {
     e.preventDefault();
     try {
       await googleSignIn();
-
+      setIsOpen(false);
       navigate("/sell", { state: { from: state } });
     } catch (error) {
       console.log(error.message);
