@@ -31,6 +31,9 @@ const Home = () => {
   //graphs stuff
   const [predictors, setPredictors] = useState({})
 
+  //validation stuff
+  const [predictValidated, setPredictValidated] = useState(false)
+
   const carDetails = {
     model: model,
     make: make,
@@ -50,52 +53,46 @@ const sellerDetails = {
 }
 
   const carMakeOptions = [
-    "Acura",
-    "Aston Martin",
-    "Audi",
-    "Bentley",
-    "BMW",
-    "Buick",
-    "Cadillac",
-    "Chevrolet",
-    "Chrysler",
-    "Dodge",
-    "Ferrari",
-    "FIAT",
-    "Fisker",
-    "Ford",
-    "GMC",
-    "Honda",
-    "Hyundai",
-    "INFINITI",
-    "Jaguar",
-    "Jeep",
-    "Kia",
-    "Lamborghini",
-    "Land Rover",
-    "Lexus",
-    "Lincoln",
-    "Maserati",
-    "Maybach",
-    "Mazda",
-    "McLaren",
-    "Mercedes-Benz",
-    "MINI",
-    "Mitsubishi",
-    "Nissan",
-    "Porsche",
-    "Ram",
-    "Rolls-Royce",
-    "Saab",
-    "Scion",
-    "smart",
-    "Subaru",
-    "Suzuki",
-    "Tesla",
-    "Toyota",
-    "Volkswagen",
-    "Volvo",
-  ];
+  "Acura",
+  "Alfa-romeo",
+  "Aston-martin",
+  "Audi",
+  "Bmw",
+  "Buick",
+  "Cadillac",
+  "Chevrolet",
+  "Chrysler",
+  "Dodge",
+  "Ferrari",
+  "Fiat",
+  "Ford",
+  "Gmc",
+  "Harley-davidson",
+  "Honda",
+  "Hyundai",
+  "INFINITI",
+  "Jaguar",
+  "Jeep",
+  "Kia",
+  "Land rover",
+  "Lexus",
+  "Lincoln",
+  "Mazda",
+  "Mercedes-benz",
+  "Mercury",
+  "Mini",
+  "Mitsubishi",
+  "Nissan",
+  "Pontiac",
+  "Porsche",
+  "Ram",
+  "Rover",
+  "Saturn",
+  "Subaru",
+  "Tesla",
+  "Toyota",
+  "Volkswagen",
+  "Volvo"]
 
   const currentYear = new Date().getFullYear();
   const yearOptions = Array.from({ length: currentYear - 1990 + 1 }, (_, index) => (
@@ -127,6 +124,20 @@ const sellerDetails = {
     }
   };
 
+  const predictSubmit = (e) => {
+      e.preventDefault();
+
+      if (e.currentTarget.checkValidity() === false) { //failed
+        setPredictValidated(true)
+      }
+      else
+      {
+        setPredictValidated(false) //no point in validation anymore.
+        predict()
+      }
+      
+  }
+
   const predict = async () => {
     try {
       const options = {
@@ -136,16 +147,19 @@ const sellerDetails = {
       };
 
       fetch("http://localhost:5069/model", options)
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok)
+          throw new Error(response.status);
+        return response.json()})
       .then(data => {
-        console.log("Prediction is " + data.prediction)
         setPredictionConfidence(parseFloat(data.confidence))
-
         setPredictors(data.predictors)
         setPrice(parseFloat(data.prediction))
         setPredictedPrice(parseFloat(data.prediction))
       })
-      .catch(error => console.error(error));
+      .catch(error => {
+        console.error(error)
+      });
 
     } catch (error) {
       console.log(error.message);
@@ -156,97 +170,108 @@ const sellerDetails = {
     <>
       <div className="row">
         <div className="col-6">
-          <div className="p-4 box mt-3 text-center">
+          <div className="p-4 box mt-3">
             <h2 className="mb-3">Car Price Validator</h2>
             <h3>Enter Car Details</h3>
             {error && <Alert variant="danger">{error}</Alert>}
-            <Form>
+            <Form noValidate validated={predictValidated} onSubmit={predictSubmit}>
               <Form.Group className="mb-3" controlId="formBasicYear">
-              <Form.Select
-                value={year}
-                onChange={(e) => setYear(e.target.value)}
-                style={{ color: 'grey' }}
-              >
-                <option value="" disabled>
-                  Select Year
-                </option>
-                {yearOptions}
-              </Form.Select>
-              </Form.Group>
-
-              <Form.Group className="mb-3" controlId="formBasicPassword">
-              <Form.Select
-                value={make}
-                onChange={(e) => setMake(e.target.value)}
-                style={{ color: 'grey' }}
-                placeholder="Car Make"
-              >
-                <option value="" disabled style={{ color: 'grey' }}>
-                  Car Make
-                </option>
-                {carMakeOptions.map((option, index) => (
-                  <option key={index} value={option}>
-                    {option}
+                <Form.Label required>Year</Form.Label>
+                <Form.Select
+                  value={year}
+                  onChange={(e) => setYear(e.target.value)}
+                  style={{ color: 'grey' }}
+                  required
+                >
+                  <option value="" disabled>
+                    Select Year
                   </option>
-                ))}
-              </Form.Select>
+                  {yearOptions}
+                </Form.Select>
+                <Form.Control.Feedback type="invalid">Please select a valid year.</Form.Control.Feedback>
               </Form.Group>
 
-              <Form.Group className="mb-3" controlId="formBasicEmail">
+              <Form.Group className="mb-3" controlId="formBasicMake">
+                <Form.Label>Make</Form.Label>
+                <Form.Select
+                  value={make}
+                  onChange={(e) => setMake(e.target.value)}
+                  style={{ color: 'grey' }}
+                  required
+                  placeholder="Car Make"
+                >
+                  <option value="" disabled style={{ color: 'grey' }}>
+                    Car Make
+                  </option>
+                  {carMakeOptions.map((option, index) => (
+                    <option key={index} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </Form.Select>
+                <Form.Control.Feedback type="invalid">Please select a valid car manufacturer.</Form.Control.Feedback>
+              </Form.Group>
+
+              <Form.Group className="mb-3" controlId="formBasicModel">
+                <Form.Label>Model</Form.Label>
                 <Form.Select
                   value={model}
                   disabled={!make}
                   readOnly={!make}
                   placeholder="Car Model"
-                  onChange={(e) => setModel(e.target.value)}
+                  required
+                  onChange={(e) => {setModel(e.target.value)}}
                 >
+                  <option value="" disabled style={{ color: 'grey' }}>
+                    Car Model
+                  </option>
                   {
-                    make ?
+                    make && //Only show if make is selected.
                       models[make.toLowerCase()].map((option, index) => (
                         <option key={index} value={option}>
                           {option}
                         </option>
                       ))
-                    :
-                    <option value="" disabled style={{ color: 'grey' }}>
-                      Car Model
-                    </option>
                   }
                 </Form.Select>
+                <Form.Control.Feedback type="invalid">Please select a valid car model.</Form.Control.Feedback>
               </Form.Group>
 
-              <Form.Group className="mb-3" controlId="formBasicPassword">
+              <Form.Group className="mb-3" controlId="formBasicMileage">
+                <Form.Label>Mileage</Form.Label>
                 <Form.Control
                   type="number"
-                  step="0.01"
+                  step="100"
                   placeholder="Car Mileage"
                   onChange={(e) => setMileage(e.target.value)}
                 />
+                <Form.Control.Feedback type="invalid">Please input the car's mileage.</Form.Control.Feedback>
               </Form.Group>
 
-              <Form.Group className="mb-3" controlId="formBasicPassword">
-              <Form.Control
-                as="select"
-                value={condition}
-                style={{ color: 'grey' }}
-                placeholder="Car Condition"
-                onChange={(e) => setCondition(e.target.value)}
-              >
-                <option value="" disabled style={{ color: 'grey' }}>
-                  Car Condition
-                </option>
-                <option value="new" title="New Condition: Car is practically new, barely driven.">New</option>
-                <option value="excellent" title="Excellent Condition: Vehicle looks new & is in excellent mechanical condition.">Excellent</option>
-                <option value="good" title="Good Condition: Some repairable cosmetic defects & is free of major mechanical problems.">Good</option>
-                <option value="fair" title="Fair Condition: Some cosmetic defects that require repairing /replacing.">Fair</option>
-                <option value="salvage" title="Poor Condition: Severe wear or damage, not in good working condition.">Salvage</option>
-              </Form.Control>
+              <Form.Group className="mb-3" controlId="formBasicCondition">
+                <Form.Label>Condition</Form.Label>
+                <Form.Control
+                  as="select"
+                  value={condition}
+                  style={{ color: 'grey' }}
+                  placeholder="Car Condition"
+                  onChange={(e) => setCondition(e.target.value)}
+                  required
+                >
+                  <option value="" disabled style={{ color: 'grey' }}>
+                    Car Condition
+                  </option>
+                  <option value="new" title="New Condition: Car is practically new, barely driven.">New</option>
+                  <option value="excellent" title="Excellent Condition: Vehicle looks new & is in excellent mechanical condition.">Excellent</option>
+                  <option value="good" title="Good Condition: Some repairable cosmetic defects & is free of major mechanical problems.">Good</option>
+                  <option value="fair" title="Fair Condition: Some cosmetic defects that require repairing /replacing.">Fair</option>
+                  <option value="salvage" title="Poor Condition: Severe wear or damage, not in good working condition.">Salvage</option>
+                </Form.Control>
+                <Form.Control.Feedback type="invalid">Please select the car's condition.</Form.Control.Feedback>
               </Form.Group>
+
+              <Button type="submit" className="col-10" variant="primary">Predict</Button>
             </Form>
-
-            <Button className="col-10" variant="primary" onClick={predict}>
-              Predict
-            </Button>
           </div>
         </div>
 

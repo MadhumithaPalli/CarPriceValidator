@@ -65,6 +65,8 @@ async function predict(year, make, model, condition, mileage) //predict given va
 
     let featureArray = [year, carModels[make][model], conditionEncode[condition], mileage]
 
+    console.log(featureArray)
+
     //SCALE THE NUMERIC VALUES
     const std = [6.0088270199943725, 0.7007531240326841, 0.5598212710061845, 67433.14457317894] //this is based on the model trained.
     const mean = [2012.131193755739, 1.1055213161032302, 2.4497704315886133, 91953.27159320477]
@@ -120,8 +122,6 @@ app.post("/model", async (req, res) => {
       let curCon = conditions.shift()
       predictors.conditions[curCon] = await predict(carInfo.year, carInfo.make, carInfo.model, curCon, carInfo.mileage)
     }while(conditions.length > 0)
-
-    console.log(predictors)
   
     const data =
     {
@@ -134,15 +134,8 @@ app.post("/model", async (req, res) => {
   }
   catch(error)
   {
-    console.log(error)
-
-    const data =
-    {
-      prediction: -1,
-      confidence: 0.76
-    }
-
-    res.send(JSON.stringify(data));
+    res.statusMessage = "Error in prediction: " + error;
+    res.status(400).end();
   }
 });
 // make an id for the car based on the user's name and car's make and model
