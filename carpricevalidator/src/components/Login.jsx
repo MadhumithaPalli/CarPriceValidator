@@ -67,7 +67,7 @@ const Login = ({ showModal, handleModal }) => {
             </div>
           </Form>
           <hr />
-          <div>
+          <div className="d-flex justify-content-center">
             <GoogleButton
               className="g-btn"
               type="dark"
