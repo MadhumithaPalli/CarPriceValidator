@@ -13,8 +13,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 function App() {
   return (
     <>
-      <NavBar></NavBar>
       <UserAuthContextProvider>
+        <NavBar></NavBar>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/home" element={<Home />} />
