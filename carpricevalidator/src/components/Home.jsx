@@ -7,6 +7,7 @@ import LineGraph from "./subcomponents/LineGraph";
 import Login from "./Login";
 
 import models from "./jsons/carModels";
+import usStates from "./jsons/US_States.json";
 import axios from "axios";
 
 const Home = () => {
@@ -29,11 +30,14 @@ const Home = () => {
   const { user, logOut } = useUserAuth();
   const [isOpen, setIsOpen] = useState(false);
 
+  const predictForm = useRef(null);
+
   //graphs stuff
   const [predictors, setPredictors] = useState({});
 
   //validation stuff
   const [predictValidated, setPredictValidated] = useState(false);
+  const [sellValidated, setSellValidated] = useState(false);
   const carDetails = {
     model: model,
     make: make,
@@ -120,35 +124,31 @@ const Home = () => {
   };
   //  go to selling page
   const handleSelling = async () => {
-    if (carImage) {
-      const reader = new FileReader();
-      reader.readAsDataURL(carImage);
-      reader.onloadend = () => {
-        carDetails.image = reader.result;
-        console.log(carDetails);
-        console.log(sellerDetails);
-        const bodyData = {
-          car_info: carDetails,
-          seller_info: sellerDetails,
-        };
-        axios
-          .post("http://localhost:5069/api/sell", bodyData)
-          .then((res) => {
-            console.log(res);
-            if (res.status === 200) {
-              alert("Car details submitted successfully");
-              navigate("/selling");
-            } else {
-              alert("Something went wrong");
-            }
-          })
-          .catch((err) => {
-            console.log(err);
-          });
+    const reader = new FileReader();
+    reader.readAsDataURL(carImage);
+    reader.onloadend = () => {
+      carDetails.image = reader.result;
+      console.log(carDetails);
+      console.log(sellerDetails);
+      const bodyData = {
+        car_info: carDetails,
+        seller_info: sellerDetails,
       };
-    } else {
-      alert("Please upload a car image");
-    }
+      axios
+        .post("http://localhost:5069/api/sell", bodyData)
+        .then((res) => {
+          console.log(res);
+          if (res.status === 200) {
+            alert("Car details submitted successfully");
+            navigate("/marketplace");
+          } else {
+            alert("Something went wrong");
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    };
   };
 
   const predictSubmit = (e) => {
@@ -162,6 +162,23 @@ const Home = () => {
       predict();
     }
   };
+
+  const sellSubmit = (e) => {
+    e.preventDefault();
+
+    //first, check if predict form isn't valid
+    const predictBad = (predictForm.current.checkValidity() === false)
+    setPredictValidated(predictBad);
+
+    //Now check if seller information is not valid.
+    const validBad = e.currentTarget.checkValidity() === false
+    setSellValidated(validBad)
+    
+    if(!predictBad && !validBad)
+    {
+      handleSelling()
+    }
+  }
 
   const predict = async () => {
     try {
@@ -202,6 +219,7 @@ const Home = () => {
               noValidate
               validated={predictValidated}
               onSubmit={predictSubmit}
+              ref={predictForm}
             >
               <Form.Group className="mb-3" controlId="formBasicYear">
                 <Form.Label required>Year</Form.Label>
@@ -335,9 +353,11 @@ const Home = () => {
                 </Form.Control.Feedback>
               </Form.Group>
 
-              <Button type="submit" className="col-10" variant="primary">
-                Predict
-              </Button>
+              <div className="text-center">
+                <Button type="submit" className="col-10" variant="primary">
+                  Predict
+                </Button>
+              </div>
             </Form>
           </div>
         </div>
@@ -346,10 +366,21 @@ const Home = () => {
           <div className="p-4 box mt-3">
             <h2 className="mb-3">Selling Information</h2>
             {error && <Alert variant="danger">{error}</Alert>}
-            <Form>
+            <Form 
+              noValidate
+              validated={sellValidated}
+              onSubmit={sellSubmit}
+            >
               <Form.Label>Car Image</Form.Label>
               <Form.Group controlId="formFile" className="mb-3">
-                <Form.Control type="file" onChange={(e) => handleImage(e)} />
+                <Form.Control 
+                  type="file" 
+                  onChange={(e) => handleImage(e)} 
+                  required
+                />
+                <Form.Control.Feedback type="invalid">
+                  Please insert a car image.
+                </Form.Control.Feedback>
               </Form.Group>
 
               <Form.Group className="mb-3" controlId="formBasicEmail">
@@ -358,40 +389,67 @@ const Home = () => {
                   type="text"
                   accept="image/*"
                   placeholder="Seller's Name"
+                  required
                   onChange={(e) => setSellerName(e.target.value)}
                 />
+                <Form.Control.Feedback type="invalid">
+                  Please insert the seller's name.
+                </Form.Control.Feedback>
               </Form.Group>
 
               <div className="row">
                 <div className="col-6">
                   <Form.Group className="mb-3" controlId="formBasicEmail">
+                    <Form.Label>Seller's Email</Form.Label>
                     <Form.Control
                       type="text"
                       placeholder="Contact Email"
                       onChange={(e) => setSellerEmail(e.target.value)}
+                      required
                     />
+                    <Form.Control.Feedback type="invalid">
+                      Please insert the seller's email.
+                    </Form.Control.Feedback>
                   </Form.Group>
                 </div>
                 <div className="col-6">
                   <Form.Group className="mb-3" controlId="formBasicEmail">
+                    <Form.Label>Seller's Phone Number</Form.Label>
                     <Form.Control
                       type="text"
                       placeholder="Phone Number"
                       onChange={(e) => setSellerPhoneNumber(e.target.value)}
+                      required
                     />
+                    <Form.Control.Feedback type="invalid">
+                      Please insert the seller's phone number.
+                    </Form.Control.Feedback>
                   </Form.Group>
                 </div>
               </div>
 
               <div className="row">
-                <div className="col-6">
+                <div className="col-3">
                   <Form.Label>Seller's State</Form.Label>
                   <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Control
+                    <Form.Select
                       type="text"
+                      value={sellerState}
                       placeholder="State"
                       onChange={(e) => setSellerState(e.target.value)}
-                    />
+                      required>
+                        <option value="" disabled style={{ color: "grey" }}>
+                          State
+                        </option>
+                        {usStates.map((option, index) => (
+                          <option key={index} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                    </Form.Select>
+                    <Form.Control.Feedback type="invalid">
+                      Please input the seller's state.
+                    </Form.Control.Feedback>
                   </Form.Group>
                 </div>
                 <div className="col">
@@ -401,17 +459,26 @@ const Home = () => {
                       type="text"
                       placeholder="City"
                       onChange={(e) => setSellerCity(e.target.value)}
+                      required
                     />
+                    <Form.Control.Feedback type="invalid">
+                      Please input the seller's city.
+                    </Form.Control.Feedback>
                   </Form.Group>
                 </div>
-                <div className="col">
+                <div className="col-2">
                   <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Label>Seller's Zip</Form.Label>
                     <Form.Control
                       type="text"
                       placeholder="Zip"
+                      maxLength={5}
                       onChange={(e) => setSellerZip(e.target.value)}
+                      required
                     />
+                    <Form.Control.Feedback type="invalid">
+                      Please input the seller's zip code.
+                    </Form.Control.Feedback>
                   </Form.Group>
                 </div>
               </div>
@@ -423,17 +490,22 @@ const Home = () => {
                   placeholder="Car Price"
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
+                  required
                 />
+                <Form.Control.Feedback type="invalid">
+                  Please input the price, or use the prediction.
+                </Form.Control.Feedback>
               </Form.Group>
+              <div className="text-center">
+                <Button
+                  className="col-10"
+                  type="submit"
+                  variant="primary"
+                >
+                  Sell
+                </Button>
+              </div>
             </Form>
-
-            <Button
-              className="col-10"
-              variant="primary"
-              onClick={handleSelling}
-            >
-              Sell
-            </Button>
           </div>
         </div>
       </div>
