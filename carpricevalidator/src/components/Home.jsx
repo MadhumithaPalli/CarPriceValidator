@@ -196,8 +196,7 @@ const Home = () => {
         {/* <Login isOpen={isOpen} setIsOpen={setIsOpen} /> */}
         <div className="col-6">
           <div className="p-4 box mt-3">
-            <h2 className="mb-3">Car Price Validator</h2>
-            <h3>Enter Car Details</h3>
+            <h2 className="mb-3">Car Information</h2>
             {error && <Alert variant="danger">{error}</Alert>}
             <Form
               noValidate
@@ -276,9 +275,11 @@ const Home = () => {
                 <Form.Label>Mileage</Form.Label>
                 <Form.Control
                   type="number"
+                  value={mileage}
                   step="100"
                   placeholder="Car Mileage"
                   onChange={(e) => setMileage(e.target.value)}
+                  required
                 />
                 <Form.Control.Feedback type="invalid">
                   Please input the car's mileage.
@@ -342,16 +343,17 @@ const Home = () => {
         </div>
 
         <div className="col-6">
-          <div className="p-4 box mt-3 text-center">
-            <h2 className="mb-3">Car Sell Information</h2>
-            <h3>Enter Selling Information</h3>
+          <div className="p-4 box mt-3">
+            <h2 className="mb-3">Selling Information</h2>
             {error && <Alert variant="danger">{error}</Alert>}
             <Form>
+              <Form.Label>Car Image</Form.Label>
               <Form.Group controlId="formFile" className="mb-3">
                 <Form.Control type="file" onChange={(e) => handleImage(e)} />
               </Form.Group>
 
               <Form.Group className="mb-3" controlId="formBasicEmail">
+                <Form.Label>Seller's Name</Form.Label>
                 <Form.Control
                   type="text"
                   accept="image/*"
@@ -383,6 +385,7 @@ const Home = () => {
 
               <div className="row">
                 <div className="col-6">
+                  <Form.Label>Seller's State</Form.Label>
                   <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Control
                       type="text"
@@ -393,6 +396,7 @@ const Home = () => {
                 </div>
                 <div className="col">
                   <Form.Group className="mb-3" controlId="formBasicEmail">
+                    <Form.Label>Seller's City</Form.Label>
                     <Form.Control
                       type="text"
                       placeholder="City"
@@ -402,6 +406,7 @@ const Home = () => {
                 </div>
                 <div className="col">
                   <Form.Group className="mb-3" controlId="formBasicEmail">
+                    <Form.Label>Seller's Zip</Form.Label>
                     <Form.Control
                       type="text"
                       placeholder="Zip"
@@ -412,6 +417,7 @@ const Home = () => {
               </div>
 
               <Form.Group className="mb-3" controlId="formBasicPassword">
+                <Form.Label>Car Price</Form.Label>
                 <Form.Control
                   type="text"
                   placeholder="Car Price"
