@@ -75,7 +75,7 @@ const Login = ({ showModal, handleModal }) => {
             />
           </div>
         </div>
-        <div className="p-4 box mt-3 text-center">
+        <div className="p-4 box mt-3 text-center" onClick={handleModal}>
           Don't have an account? <Link to="/signup">Sign up</Link>
         </div>
       </Modal>
