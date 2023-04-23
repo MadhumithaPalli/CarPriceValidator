@@ -50,7 +50,7 @@ const Home = () => {
 
   const sellerDetails = {
     sellerName: sellerName,
-    sellerEmail: sellerEmail,
+    sellerEmail: sellerEmail.toLowerCase(),
     phoneNumber: sellerPhoneNumber,
     state: sellerState,
     city: sellerCity,
@@ -167,18 +167,17 @@ const Home = () => {
     e.preventDefault();
 
     //first, check if predict form isn't valid
-    const predictBad = (predictForm.current.checkValidity() === false)
+    const predictBad = predictForm.current.checkValidity() === false;
     setPredictValidated(predictBad);
 
     //Now check if seller information is not valid.
-    const validBad = e.currentTarget.checkValidity() === false
-    setSellValidated(validBad)
-    
-    if(!predictBad && !validBad)
-    {
-      handleSelling()
+    const validBad = e.currentTarget.checkValidity() === false;
+    setSellValidated(validBad);
+
+    if (!predictBad && !validBad) {
+      handleSelling();
     }
-  }
+  };
 
   const predict = async () => {
     try {
@@ -366,16 +365,12 @@ const Home = () => {
           <div className="p-4 box mt-3">
             <h2 className="mb-3">Selling Information</h2>
             {error && <Alert variant="danger">{error}</Alert>}
-            <Form 
-              noValidate
-              validated={sellValidated}
-              onSubmit={sellSubmit}
-            >
+            <Form noValidate validated={sellValidated} onSubmit={sellSubmit}>
               <Form.Label>Car Image</Form.Label>
               <Form.Group controlId="formFile" className="mb-3">
-                <Form.Control 
-                  type="file" 
-                  onChange={(e) => handleImage(e)} 
+                <Form.Control
+                  type="file"
+                  onChange={(e) => handleImage(e)}
                   required
                 />
                 <Form.Control.Feedback type="invalid">
@@ -437,15 +432,16 @@ const Home = () => {
                       value={sellerState}
                       placeholder="State"
                       onChange={(e) => setSellerState(e.target.value)}
-                      required>
-                        <option value="" disabled style={{ color: "grey" }}>
-                          State
+                      required
+                    >
+                      <option value="" disabled style={{ color: "grey" }}>
+                        State
+                      </option>
+                      {usStates.map((option, index) => (
+                        <option key={index} value={option}>
+                          {option}
                         </option>
-                        {usStates.map((option, index) => (
-                          <option key={index} value={option}>
-                            {option}
-                          </option>
-                        ))}
+                      ))}
                     </Form.Select>
                     <Form.Control.Feedback type="invalid">
                       Please input the seller's state.
@@ -497,11 +493,7 @@ const Home = () => {
                 </Form.Control.Feedback>
               </Form.Group>
               <div className="text-center">
-                <Button
-                  className="col-10"
-                  type="submit"
-                  variant="primary"
-                >
+                <Button className="col-10" type="submit" variant="primary">
                   Sell
                 </Button>
               </div>

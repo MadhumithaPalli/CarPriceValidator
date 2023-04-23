@@ -204,7 +204,7 @@ app.get("/api/cars", async (req, res) => {
 
 app.delete("/api/cars/", async (req, res) => {
   let nomatach = false;
-  const id = req.body.uid;
+  const id = req.query.uid;
   console.log(id);
   // find the car with the matching id and delete it
   try {
