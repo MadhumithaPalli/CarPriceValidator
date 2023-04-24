@@ -7,12 +7,19 @@ function BarGraph(prop) {
   const options = {
     xAxis: {
       type: "category",
-      data: keys
+      data: keys,
+      nameLocation: "center",
+      name: "condition",
+      nameGap: 30
     },
     yAxis: {
       type: "value",
       min: (Math.min(...values)/1.01).toFixed(2),
-      max: Math.max(...values)
+      max: Math.max(...values),
+      name: "price",
+      nameLocation: "center",
+      nameRotate: 90,
+      nameGap: 60
     },
     series: [
       {
@@ -30,7 +37,7 @@ function BarGraph(prop) {
   return (
     <ReactEcharts
       option={options}
-      style={{ width: "600px", height: "300px" }}
+      style={{ width: "100%", height: "400px" }}
     ></ReactEcharts>
   )
 }

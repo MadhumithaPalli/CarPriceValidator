@@ -1,10 +1,10 @@
 import { Button, Container, Form, Alert } from "react-bootstrap";
 import { useNavigate } from "react-router";
 import { useUserAuth } from "../../context/userAuthContext";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import BarGraph from "./subcomponents/BarGraph";
 import LineGraph from "./subcomponents/LineGraph";
-import Login from "./Login";
+import PieGraph from "./subcomponents/PieGraph";
 
 import models from "./jsons/carModels";
 import usStates from "./jsons/US_States.json";
@@ -50,7 +50,7 @@ const Home = () => {
 
   const sellerDetails = {
     sellerName: sellerName,
-    sellerEmail: sellerEmail.toLowerCase(),
+    sellerEmail: sellerEmail,
     phoneNumber: sellerPhoneNumber,
     state: sellerState,
     city: sellerCity,
@@ -119,8 +119,10 @@ const Home = () => {
     }
   };
   const handleImage = (e) => {
-    console.log(e.target.files[0]);
-    setCarImage(e.target.files[0]);
+    if (e.target.files[0].size > 100000)
+      alert("File size must be 100kb or under.")
+    else
+      setCarImage(e.target.files[0]);
   };
   //  go to selling page
   const handleSelling = async () => {
@@ -128,8 +130,6 @@ const Home = () => {
     reader.readAsDataURL(carImage);
     reader.onloadend = () => {
       carDetails.image = reader.result;
-      console.log(carDetails);
-      console.log(sellerDetails);
       const bodyData = {
         car_info: carDetails,
         seller_info: sellerDetails,
@@ -137,7 +137,6 @@ const Home = () => {
       axios
         .post("http://localhost:5069/api/sell", bodyData)
         .then((res) => {
-          console.log(res);
           if (res.status === 200) {
             alert("Car details submitted successfully");
             navigate("/marketplace");
@@ -147,6 +146,7 @@ const Home = () => {
         })
         .catch((err) => {
           console.log(err);
+          alert(err);
         });
     };
   };
@@ -163,6 +163,11 @@ const Home = () => {
     }
   };
 
+  // user state changed; set the user email.
+  useEffect(() => {
+    setSellerEmail(user && user.email ? user.email.toLowerCase() : "")
+  }, [user]);
+
   const sellSubmit = (e) => {
     e.preventDefault();
 
@@ -174,11 +179,19 @@ const Home = () => {
     const validBad = e.currentTarget.checkValidity() === false;
     setSellValidated(validBad);
 
-    if (!predictBad && !validBad) {
+    //check if user is signed in.
+    if(!user)
+    {
+      alert("Please login before listing a car.")
+      return;
+    }
+
+    if (!predictBad && !validBad) { //all information are valid, sell!
       handleSelling();
     }
   };
 
+  //Fetch the prediction from the backend.
   const predict = async () => {
     try {
       const options = {
@@ -203,6 +216,7 @@ const Home = () => {
         });
     } catch (error) {
       console.log(error.message);
+      alert(error.message);
     }
   };
 
@@ -234,7 +248,7 @@ const Home = () => {
                   {yearOptions}
                 </Form.Select>
                 <Form.Control.Feedback type="invalid">
-                  Please select a valid year.
+                  Select a valid year.
                 </Form.Control.Feedback>
               </Form.Group>
 
@@ -257,7 +271,7 @@ const Home = () => {
                   ))}
                 </Form.Select>
                 <Form.Control.Feedback type="invalid">
-                  Please select a valid car manufacturer.
+                  Select a valid car manufacturer.
                 </Form.Control.Feedback>
               </Form.Group>
 
@@ -284,7 +298,7 @@ const Home = () => {
                     ))}
                 </Form.Select>
                 <Form.Control.Feedback type="invalid">
-                  Please select a valid car model.
+                  Select a valid car model.
                 </Form.Control.Feedback>
               </Form.Group>
 
@@ -299,7 +313,7 @@ const Home = () => {
                   required
                 />
                 <Form.Control.Feedback type="invalid">
-                  Please input the car's mileage.
+                  Input the car's mileage.
                 </Form.Control.Feedback>
               </Form.Group>
 
@@ -348,7 +362,7 @@ const Home = () => {
                   </option>
                 </Form.Control>
                 <Form.Control.Feedback type="invalid">
-                  Please select the car's condition.
+                  Select the car's condition.
                 </Form.Control.Feedback>
               </Form.Group>
 
@@ -370,11 +384,12 @@ const Home = () => {
               <Form.Group controlId="formFile" className="mb-3">
                 <Form.Control
                   type="file"
+                  accept="image/jpeg, image/png"
                   onChange={(e) => handleImage(e)}
                   required
                 />
                 <Form.Control.Feedback type="invalid">
-                  Please insert a car image.
+                  Insert a car image.
                 </Form.Control.Feedback>
               </Form.Group>
 
@@ -388,7 +403,7 @@ const Home = () => {
                   onChange={(e) => setSellerName(e.target.value)}
                 />
                 <Form.Control.Feedback type="invalid">
-                  Please insert the seller's name.
+                  Insert the seller's name.
                 </Form.Control.Feedback>
               </Form.Group>
 
@@ -398,12 +413,14 @@ const Home = () => {
                     <Form.Label>Seller's Email</Form.Label>
                     <Form.Control
                       type="text"
-                      placeholder="Contact Email"
-                      onChange={(e) => setSellerEmail(e.target.value)}
+                      placeholder="Seller's Account Email"
+                      disabled={!user}
+                      readOnly
+                      value={sellerEmail}
                       required
                     />
                     <Form.Control.Feedback type="invalid">
-                      Please insert the seller's email.
+                      Insert the seller's email.
                     </Form.Control.Feedback>
                   </Form.Group>
                 </div>
@@ -417,7 +434,7 @@ const Home = () => {
                       required
                     />
                     <Form.Control.Feedback type="invalid">
-                      Please insert the seller's phone number.
+                      Insert the seller's phone number.
                     </Form.Control.Feedback>
                   </Form.Group>
                 </div>
@@ -444,7 +461,7 @@ const Home = () => {
                       ))}
                     </Form.Select>
                     <Form.Control.Feedback type="invalid">
-                      Please input the seller's state.
+                      Input the seller's state.
                     </Form.Control.Feedback>
                   </Form.Group>
                 </div>
@@ -458,7 +475,7 @@ const Home = () => {
                       required
                     />
                     <Form.Control.Feedback type="invalid">
-                      Please input the seller's city.
+                      Input the seller's city.
                     </Form.Control.Feedback>
                   </Form.Group>
                 </div>
@@ -473,7 +490,7 @@ const Home = () => {
                       required
                     />
                     <Form.Control.Feedback type="invalid">
-                      Please input the seller's zip code.
+                      Input seller's zip code.
                     </Form.Control.Feedback>
                   </Form.Group>
                 </div>
@@ -489,7 +506,7 @@ const Home = () => {
                   required
                 />
                 <Form.Control.Feedback type="invalid">
-                  Please input the price, or use the prediction.
+                  Input the price, or use the prediction.
                 </Form.Control.Feedback>
               </Form.Group>
               <div className="text-center">
@@ -505,24 +522,34 @@ const Home = () => {
       <div className="container-fluid text-center">
         <div className="display-3">PREDICTION PRICE RANGE</div>
         <div className="display-4">
-          {(predictionConfidence * price).toFixed(2).toString() +
+          {(predictionConfidence * predictedPrice).toFixed(2).toString() +
             " - " +
-            ((2 - predictionConfidence) * price).toFixed(2).toString()}
+            ((2 - predictionConfidence) * predictedPrice).toFixed(2).toString()}
         </div>
       </div>
 
       {predictedPrice ? (
-        <div className="d-flex justify-content-center">
-          <BarGraph data={predictors.conditions} />
+        <div className="row px-5">
+          <div className="col-sm text-center">
+            <BarGraph data={predictors.conditions} />
+            If the car was new, you would have gained 
+            ${(predictors.conditions.new - predictedPrice).toFixed(2)}
+          </div>
 
-          <div className="text-center">
+          <div className="col-sm text-center">
             <LineGraph data={predictors.mileage} />
             Due to a mileage of {mileage}, $
-            {(
+            {mileage > 0 ? (
               predictors.mileage.price[predictors.mileage.price.length - 1] -
               predictedPrice
-            ).toFixed(2)}{" "}
+            ).toFixed(2) : "0.00"}{" "}
             were lost.
+          </div>
+
+          <div className="col-sm text-center">
+            <PieGraph data={predictors.modelRatio}/>
+            Your model is ${Math.abs(predictors.modelRatio.priceDifference.toFixed(2))} {(predictors.modelRatio.priceDifference > 0) ? "more" : "less"} than
+            the median price of the manufacturer.
           </div>
         </div>
       ) : (

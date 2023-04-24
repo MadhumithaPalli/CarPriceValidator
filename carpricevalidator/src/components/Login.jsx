@@ -7,7 +7,7 @@ import { useUserAuth } from "../../context/userAuthContext";
 import { useLocation } from "react-router-dom";
 import Modal from "react-bootstrap/Modal";
 
-const Login = ({ showModal, handleModal }) => {
+const Login = ({ showModal, handleModal, handleSignUpModal }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -31,17 +31,21 @@ const Login = ({ showModal, handleModal }) => {
     try {
       await googleSignIn();
       handleModal();
-      navigate("/sell", { state: { from: state } });
     } catch (error) {
       console.log(error.message);
     }
+  };
+
+  const handleSignUp = () => { //open the sign up modal.
+    handleModal();
+    handleSignUpModal();
   };
 
   return (
     <>
       <Modal show={showModal} onHide={handleModal}>
         <div className="p-4 box">
-          <h2 className="mb-3">Car Price Validator</h2>
+          <h2 className="mb-3">Value Vroom</h2>
           {error && <Alert variant="danger">{error}</Alert>}
           <Form onSubmit={handleSubmit}>
             <Form.Group className="mb-3" controlId="formBasicEmail">
@@ -75,8 +79,8 @@ const Login = ({ showModal, handleModal }) => {
             />
           </div>
         </div>
-        <div className="p-4 box mt-3 text-center" onClick={handleModal}>
-          Don't have an account? <Link to="/signup">Sign up</Link>
+        <div className="p-4 box mt-3 text-center" onClick={handleSignUp}>
+          Don't have an account? <Link>Sign up</Link>
         </div>
       </Modal>
     </>

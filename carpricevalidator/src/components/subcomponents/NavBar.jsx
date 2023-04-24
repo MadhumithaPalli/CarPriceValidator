@@ -5,11 +5,19 @@ import Navbar from "react-bootstrap/Navbar";
 import Login from "../Login";
 import { useState } from "react";
 import { useUserAuth } from "../../../context/userAuthContext";
+import Signup from "../Signup";
 function NavBar(prop) {
-  const [showModal, setShowModal] = useState(false);
-  const handleModal = () => {
-    setShowModal(!showModal);
+  const [showLogInModal, setShowLogInModal] = useState(false);
+  const [showSignUpModal, setShowSignUpModal] = useState(false);
+
+  const handleLogInModal = () => {
+    setShowLogInModal(!showLogInModal);
   };
+
+  const handleSignUpModal = () => {
+    setShowSignUpModal(!showSignUpModal);
+  };
+
   const { user, logOut } = useUserAuth();
   const handleLogout = async () => {
     try {
@@ -34,14 +42,15 @@ function NavBar(prop) {
               Logout
             </Button>
           ) : (
-            <Button variant="outline-light" onClick={handleModal}>
+            <Button variant="outline-light" onClick={handleLogInModal}>
               Login
             </Button>
           )}
         </Container>
       </Navbar>
 
-      <Login showModal={showModal} handleModal={handleModal} />
+      <Login showModal={showLogInModal} handleModal={handleLogInModal} handleSignUpModal={handleSignUpModal} />
+      <Signup showModal={showSignUpModal} handleModal={handleSignUpModal} handleSignInModal={handleLogInModal} />
     </>
   );
 }

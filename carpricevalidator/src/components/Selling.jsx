@@ -43,7 +43,7 @@ function Selling() {
             <Card.Text>Price : {car.car_info.price}</Card.Text>
             <Card.Text>Seller Name : {car.seller_info.sellerName}</Card.Text>
             <Card.Text>Seller Email : {car.seller_info.sellerEmail}</Card.Text>
-            {user && user.email === car.seller_info.sellerEmail && (
+            {user && user.email === car.seller_info.sellerEmail.toLowerCase() && (
               <Button variant="danger" onClick={() => handleDeleteCar(car.uid)}>
                 Delete
               </Button>

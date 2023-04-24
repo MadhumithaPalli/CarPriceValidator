@@ -66,7 +66,7 @@ async function predict(year, make, model, condition, mileage) {
 
   let featureArray = [
     year,
-    carModels[make][model],
+    (typeof model == "string") ? carModels[make][model] : model, //model ratio comparision sends 1 as an argument
     conditionEncode[condition],
     mileage,
   ];
@@ -151,9 +151,15 @@ app.post("/model", async (req, res) => {
       );
     } while (conditions.length > 0);
 
+    //Calculate the manufacturer and model ratio.
+    predictors.modelRatio = {};
+    predictors.modelRatio.make = {name:carInfo.make, ratio: 1};
+    predictors.modelRatio.model = {name:carInfo.model, ratio: carModels[carInfo.make][carInfo.model]};
+    predictors.modelRatio.priceDifference = prediction - await predict(carInfo.year, carInfo.make, 1.0, carInfo.condition,curMileage) //sends the median price.
+
     const data = {
       prediction: prediction,
-      confidence: 0.84,
+      confidence: 0.78,
       predictors: predictors,
     };
 

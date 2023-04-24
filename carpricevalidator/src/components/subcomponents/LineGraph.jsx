@@ -7,25 +7,33 @@ function LineGraph(prop) {
   const options = {
     xAxis: {
       type: 'category',
-      data: keys
+      data: keys,
+      nameLocation: "center",
+      name: "mileage",
+      nameGap: 30
     },
     yAxis: {
       type: 'value',
       max: values[0],
-      min: values[values.length - 1]
+      min: values[values.length - 1],
+      name: "price",
+      nameGap: 60
     },
     series: [
       {
         data: values,
         type: 'line'
       }
-    ]
+    ],
+    tooltip: {
+      trigger: "item"
+    }
   };
 
   return (
     <ReactEcharts
       option={options}
-      style={{ width: "600px", height: "300px" }}
+      style={{ width: "100%", height: "400px" }}
     ></ReactEcharts>
   )
 }
